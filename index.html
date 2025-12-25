@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#d32f2f">
 <meta charset="UTF-8">
@@ -745,13 +749,21 @@ function saveFromSettings(){
   applySettings();
 }
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("setNotify").addEventListener("change", saveFromSettings);
+  const setNotify = document.getElementById("setNotify");
+  if(setNotify){
+    setNotify.addEventListener("change", saveFromSettings);
+  }
+  const setDarkMode = document.getElementById("setDarkMode");
+  if(setDarkMode){
+    setDarkMode.addEventListener("change", toggleDarkMode);
+  }
+
   document.getElementById("setSound").addEventListener("change", saveFromSettings);
-  document.getElementById("setDarkMode").addEventListener("change", saveFromSettings);
   document.getElementById("setLanguage").addEventListener("change", saveFromSettings);
 
   applySettings();
 });
+document.addEventListener("DOMContentLoaded", loadSymptoms);
 
 
 // checkboxes
@@ -762,7 +774,12 @@ document.querySelectorAll(
 });
 
 // language select
-setLanguage.addEventListener("change", saveFromSettings);
+const setLanguage = document.getElementById("setLanguage");
+if(setLanguage){
+  setLanguage.addEventListener("change", saveFromSettings);
+}
+
+
 
 const translations = {
   en:{
@@ -1150,14 +1167,15 @@ function checkSymptom(){
   `;
 
   if(data.serious){
-    output += `
-      <br><br>
-      <strong style="color:#e74c3c;">
-        ⚠ This symptom may be serious.
-      </strong><br>
-      <button onclick="connectDoctor()">👨‍⚕️ Connect to Doctor</button>
-    `;
-  }
+  output += `
+    <br><br>
+    <strong style="color:#e74c3c;">
+      ⚠ This symptom may be serious. Seek medical attention immediately.
+    </strong><br>
+    <button onclick="connectDoctor()">👨‍⚕️ Connect to Doctor</button>
+  `;
+}
+
 
   symptomOut.innerHTML = output;
 }
@@ -1289,6 +1307,16 @@ function orderRefill(name){
 
 /* AUTO LOAD */
 document.addEventListener("DOMContentLoaded",loadMedications);
+document.addEventListener("DOMContentLoaded", () => {
+  applySettings();
+  loadProfile();
+  loadSymptoms();
+  loadDiseases();
+  loadAppointments();
+  loadMedications();
+  renderDoctors();
+  updateNotifyUI();
+});
 
 /* APPOINTMENT MANAGEMENT */
 
@@ -1528,21 +1556,18 @@ const medicineDB = {
 /* AUTO LOAD ALL SYMPTOMS INTO DROPDOWN */
 function loadSymptoms(){
   const select = document.getElementById("symptomSelect");
+  if(!select) return;
+
   select.innerHTML = '<option value="">Select a symptom</option>';
 
-  Object.keys(symptomDB).forEach(symptom=>{
+  Object.keys(symptomDB).forEach(symptom => {
     const option = document.createElement("option");
     option.value = symptom;
-    option.textContent = symptom
-      .replace(/_/g," ")
-      .replace(/\b\w/g,c=>c.toUpperCase());
+    option.textContent = symptom.replace(/_/g," ").toUpperCase();
     select.appendChild(option);
   });
 }
-
 document.addEventListener("DOMContentLoaded", loadSymptoms);
-
-
 
 /* ================= DISEASE DATABASE (40+ CONDITIONS) ================= */
 
@@ -1906,6 +1931,9 @@ function callDoctor(phone){
 }
 
 document.addEventListener("DOMContentLoaded", renderDoctors);
+document.addEventListener("DOMContentLoaded", function(){
+  loadSymptoms();
+});
 
 </script>
 
