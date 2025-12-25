@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#d32f2f">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Health Assistance System</title>
+
+<style>
+#doctorList{
+  margin-top:12px;
+}
+
+.doctorCard{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:rgba(255,255,255,0.15);
+  padding:10px;
+  border-radius:12px;
+  margin-bottom:8px;
+}
+
+.doctorCard span{
+  font-size:14px;
+}
+
+.callBtn{
+  background:#2ecc71;
+  padding:8px 12px;
+  border-radius:10px;
+  color:#fff;
+  text-decoration:none;
+}
+
+/* Settings Icon */
+#settingsIcon{
+  position:fixed;
+  top:16px;
+  right:72px;
+  width:48px;
+  height:48px;
+  background:#ffffff;
+  color:#333;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  cursor:pointer;
+  z-index:9999;
+  box-shadow:0 6px 20px rgba(0,0,0,0.35);
+}
+
+/* Settings Panel */
+#settingsPanel{
+  position:fixed;
+  top:70px;
+  right:16px;
+  width:300px;
+  background:#ffffff;
+  color:#000;
+  border-radius:18px;
+  padding:16px;
+  display:none;
+  z-index:9998;
+  box-shadow:0 12px 40px rgba(0,0,0,0.4);
+}
+
+#settingsPanel label{
+  display:block;
+  margin:10px 0;
+  font-size:14px;
+}
+
+/* Notification Bell */
+#notifyIcon{
+  position:fixed;
+  top:16px;
+  right:16px;
+  width:48px;
+  height:48px;
+  background:#ffffff;
+  color:#e74c3c;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  cursor:pointer;
+  z-index:9999;
+  box-shadow:0 6px 20px rgba(0,0,0,0.35);
+}
+
+/* Badge count */
+#notifyCount{
+  position:absolute;
+  top:-4px;
+  right:-4px;
+  background:#e74c3c;
+  color:#fff;
+  font-size:12px;
+  padding:2px 6px;
+  border-radius:50%;
+  display:none;
+}
+
+/* Notification Panel */
+#notificationPanel{
+  position:fixed;
+  top:70px;
+  right:16px;
+  width:300px;
+  max-height:400px;
+  overflow:auto;
+  background:rgba(255,255,255,0.95);
+  color:#000;
+  border-radius:16px;
+  padding:14px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.4);
+  display:none;
+  z-index:9998;
+}
+
+/* SOS Floating Button */
+#sosBtn{
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 18px;
+  padding: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  z-index: 9999;
+  font-weight: bold;
+}
+
+/* ---------- GLOBAL ---------- */
+*{
+  box-sizing:border-box;
+  font-family:"Poppins","Segoe UI",sans-serif;
+}
+
+body{
+  margin:0;
+  background: linear-gradient(135deg,#4facfe,#00f2fe);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#fff;
+}
+
+/* ---------- SCREEN ---------- */
+
+.screen{
+  display:none;
+  width:92%;
+  max-width:480px;
+  min-height:520px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px);
+  border-radius:24px;
+  padding:28px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.35);
+  animation:fadeIn 0.5s ease;
+}
+
+.screen.active{
+  display:block;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:scale(0.95)}
+  to{opacity:1;transform:scale(1)}
+}
+
+h1{
+  text-align:center;
+  margin-bottom:6px;
+}
+
+.section-line{
+  width:90px;
+  height:4px;
+  background:linear-gradient(90deg,#00ffcc,#ffffff);
+  border-radius:10px;
+  margin:12px auto 24px;
+}
+
+/* ---------- CARD DASHBOARD ---------- */
+.card-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+}
+
+.card{
+  background:linear-gradient(135deg,#ffffff33,#ffffff11);
+  border-radius:20px;
+  padding:26px 10px;
+  text-align:center;
+  font-size:26px;
+  cursor:pointer;
+  transition:0.35s;
+  box-shadow:0 12px 30px rgba(0,0,0,0.3);
+}
+
+.card span{
+  display:block;
+  margin-top:8px;
+  font-size:14px;
+}
+
+.card:hover{
+  transform:translateY(-8px) scale(1.05);
+}
+
+/* ---------- INPUTS ---------- */
+input,select,textarea{
+  width:100%;
+  background:rgba(255,255,255,0.2);
+  border:none;
+  border-radius:14px;
+  padding:12px;
+  margin:10px 0;
+  color:#fff;
+}
+
+input::placeholder,textarea::placeholder{
+  color:#eee;
+}
+
+/* ---------- BUTTON ---------- */
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#00ffcc,#2ecc71);
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+button:hover{
+  transform:scale(1.04);
+}
+
+/* ---------- INFO BOX ---------- */
+.info-box{
+  background:rgba(255,255,255,0.18);
+  padding:16px;
+  border-radius:14px;
+  margin-top:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* ---------- BADGES ---------- */
+.badge{
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:12px;
+  display:inline-block;
+}
+.badge.green{background:#2ecc71;}
+.badge.orange{background:#f39c12;}
+.badge.red{background:#e74c3c;}
+
+/* ---------- BACK BUTTON ---------- */
+.back{
+  background:#95a5a6;
+  margin-top:20px;
+}
+
+/* ---------- SOS BUTTON ---------- */
+#sosBtn{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#e74c3c;
+  color:#fff;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  font-size:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 8px 25px rgba(0,0,0,0.4);
+  cursor:pointer;
+  z-index:999;
+}
+/* ================= FIX ALL SELECT BOX VISIBILITY ================= */
+
+/* Main select box */
+select {
+  background: rgba(255,255,255,0.9) !important;
+  color: #000 !important;
+  border-radius: 14px;
+  font-weight: 500;
+  appearance: none;              /* Remove default arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #333 50%),
+    linear-gradient(135deg, #333 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) calc(1em + 2px),
+    calc(100% - 15px) calc(1em + 2px);
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 40px;
+}
+
+/* Dropdown options */
+select option {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* Focus state */
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,255,204,0.5);
+}
+/* Dark Mode */
+body.dark{
+  background: #121212;
+  color: #ffffff;
+}
+
+body.dark .screen{
+  background: rgba(0,0,0,0.6);
+}
+
+body.dark input,
+body.dark select,
+body.dark textarea{
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+/* ========== DARK MODE OVERRIDES ========== */
+
+body.dark {
+  background: #121212 !important;
+  color: #ffffff !important;
+}
+
+body.dark .screen {
+  background: rgba(30,30,30,0.95) !important;
+  color: #ffffff !important;
+}
+
+body.dark input,
+body.dark select,
+body.dark textarea {
+  background: rgba(255,255,255,0.08) !important;
+  color: #ffffff !important;
+}
+
+body.dark button {
+  background: linear-gradient(135deg,#444,#222) !important;
+  color: #ffffff !important;
+}
+
+body.dark .card {
+  background: rgba(255,255,255,0.08) !important;
+}
+
+body.dark .record,
+body.dark .info-box,
+body.dark #settingsPanel,
+body.dark #notificationPanel {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+body.dark #settingsIcon,
+body.dark #notifyIcon {
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+body.dark select option {
+  background: #1e1e1e;
+  color: #ffffff;
+}
+
+</style>
+</head>
+
+<body>
+<!-- Notification Icon -->
+<div id="notifyIcon" onclick="toggleNotifications()">
+  🔔
+  <span id="notifyCount">0</span>
+</div>
+<!-- Settings Icon -->
+<div id="settingsIcon" onclick="toggleSettings()">⚙</div>
+
+<!-- MAIN -->
+<div id="main" class="screen active">
+
+  <div style="position:absolute;top:16px;right:16px;z-index:10;">
+    <img id="homeProfilePic"
+         src=""
+         alt="Profile"
+         onclick="show('profile')"
+         style="
+           width:48px;
+           height:48px;
+           border-radius:50%;
+           object-fit:cover;
+           display:none;
+           border:2px solid #fff;
+           cursor:pointer;
+         ">
+  </div>
+
+  <!-- rest of your home content -->
+
+<h1>🏥 Health Assistant</h1>
+<button onclick="show('profile')">🧑 User Profile</button>
+<button onclick="show('records')">📋 Health Records</button>
+<button onclick="show('medicine')">💊 Medicine Info</button>
+<button onclick="show('medicineSuggest')">🧠💊 Medicine Suggestion</button>
+<button onclick="show('appointments')">📅 Appointments</button>
+<button onclick="show('doctorSection')">👨‍⚕️ Saved Doctors</button>
+<button onclick="show('medTrack')">💊😷 Medication Tracking</button>
+<button onclick="show('symptomBot')">🤒 Symptom Checker</button>
+<button onclick="show('advanced')">⚙ Advanced Services</button>
+<p class="small">
+We’re here to help you understand your health better.  
+In any serious case, always talk with your doctor.
+</p>
+
+</div>
+
+<div class="screen" id="doctorSection">
+  <h3>Doctors</h3>
+
+  <input type="text" id="doctorNameInput" placeholder="Doctor Name">
+  <input type="tel" id="doctorPhoneInput" placeholder="Phone Number">
+
+  <button onclick="addDoctor()">Add Doctor</button>
+
+  <div id="doctorList"></div>
+
+  <button class="back" onclick="show('main')">← Back</button>
+</div>
+
+<!-- USER PROFILE -->
+<div id="profile" class="screen">
+<h1>🧑 User Profile</h1>
+<!-- PROFILE PICTURE -->
+<div style="text-align:center;margin-bottom:15px;">
+  <img id="profilePicPreview"
+       src=""
+       alt="Profile Picture"
+       style="width:120px;height:120px;border-radius:50%;object-fit:cover;display:none;box-shadow:0 8px 20px rgba(0,0,0,0.3);">
+
+  <input type="file"
+         id="profilePicInput"
+         accept="image/*"
+         style="display:none"
+         onchange="previewProfilePic(event)">
+
+  <button type="button" onclick="document.getElementById('profilePicInput').click()">
+    📷 Add / Change Photo
+  </button>
+</div>
+
+<input id="uname" placeholder="Full Name">
+<input id="uage" type="number" placeholder="Age">
+<select id="ugender">
+  <option value="">Gender</option>
+  <option>Male</option>
+  <option>Female</option>
+  <option>Other</option>
+</select>
+<select id="ublood">
+  <option value="">Blood Group</option>
+  <option>A+</option><option>A-</option>
+  <option>B+</option><option>B-</option>
+  <option>AB+</option><option>AB-</option>
+  <option>O+</option><option>O-</option>
+</select>
+<button onclick="saveProfile()">Save Profile</button>
+<div id="profileOut" class="output"></div>
+<button class="back" onclick="show('main')">← Back</button>
+</div>
+
+<!-- HEALTH RECORDS -->
+<div id="records" class="screen">
+<h1>📋 Health Records</h1>
+
+<textarea id="symptoms" placeholder="Symptoms"></textarea>
+<textarea id="diagnosis" placeholder="Diagnosis"></textarea>
+<textarea id="medicines" placeholder="Medicines"></textarea>
+<textarea id="notes" placeholder="Doctor / Personal Notes"></textarea>
+
+<button onclick="addRecord()">Add Record</button>
+<div id="recordList" class="output"></div>
+
+<button class="back" onclick="show('main')">← Back</button>
+</div>
+
+<!-- MEDICINE INFO -->
+<div id="medicine" class="screen">
+<h1>💊 Medicine Info</h1>
+<input id="medInput" placeholder="Enter medicine name">
+<button onclick="medicineInfo()">Search</button>
+<div id="medOut" class="output"></div>
+<button class="back" onclick="show('main')">← Back</button>
+</div>
+
+
+<div id="appointments" class="screen">
+<h1>📅 Appointment Management</h1>
+
+<input id="docName" placeholder="Doctor Name">
+<input id="apptDate" type="datetime-local">
+
+<select id="apptType">
+  <option value="">Consultation Type</option>
+  <option value="In-Person">In-Person</option>
+  <option value="Audio">Audio Call</option>
+  <option value="Video">Video Call</option>
+</select>
+
+<textarea id="apptNotes" placeholder="Reason / Notes"></textarea>
+
+<button onclick="bookAppointment()">Book Appointment</button>
+
+<div id="apptList" class="output"></div>
+
+<button class="back" onclick="show('main')">← Back</button>
+</div>
+
+<div id="medTrack" class="screen">
+<h1>💊😷 Medication Tracking</h1>
+
+<input id="medName" placeholder="Medicine Name">
+<input id="medDose" placeholder="Dosage (e.g. 500mg)">
+<input id="medTime" type="time">
+
+<button onclick="addMedication()">Add Medication</button>
+
+<div id="medList" class="output"></div>
+
+<button class="back" onclick="show('main')">← Back</button>
+</div>
+<div id="symptomBot" class="screen">
+<h1>🤒 Symptom Checker</h1>
+
+<p class="small">
+This tool provides general health information only.
+It does NOT diagnose diseases.
+</p>
+
+<select id="symptomSelect">
+  <option value="">Select a symptom</option>
+</select>
+
+
+<button onclick="checkSymptom()">Check</button>
+
+<div id="symptomOut" class="output"></div>
+
+<button class="back" onclick="show('main')">← Back</button>
+</div>
+
+<div id="medicineSuggest" class="screen">
+  <h1>🧠💊 Medicine Suggestion</h1>
+
+  <p class="small">
+    Select a disease to see commonly used medicines.
+    This is educational only, not a prescription.
+  </p>
+
+  <select id="diseaseSelect">
+    <option value="">Select Disease</option>
+  </select>
+
+  <button onclick="suggestMedicine()">Suggest Medicine</button>
+
+  <div id="suggestOut" class="output"></div>
+
+  <button class="back" onclick="show('main')">← Back</button>
+</div>
+
+
+<div id="advanced" class="screen">
+<h1>⚙ Advanced Services</h1>
+
+<button onclick="show('healthTips')">📰 Health Tips & Articles</button>
+<button onclick="show('insurance')">🛡 Insurance & Claims</button>
+<button class="back" onclick="show('main')">← Back</button>
+</div>
+<div id="healthTips" class="screen">
+<h1>📰 Health Education</h1>
+
+<div class="output">
+  <h3>Healthy Lifestyle Tips</h3>
+  <ul>
+    <li>Drink at least 8 glasses of water daily</li>
+    <li>Exercise 30 minutes per day</li>
+    <li>Get 7–8 hours of sleep</li>
+    <li>Avoid smoking and junk food</li>
+    <li>Manage stress with meditation</li>
+  </ul>
+
+  <h3>Common Health Articles</h3>
+  <ul>
+    <li>Understanding Diabetes</li>
+    <li>Heart Health Awareness</li>
+    <li>Mental Health & Stress</li>
+    <li>Importance of Vaccination</li>
+  </ul>
+</div>
+
+<button class="back" onclick="show('advanced')">← Back</button>
+</div>
+<div id="insurance" class="screen">
+<h1>🛡 Insurance & Claims</h1>
+
+<select id="insuranceType">
+  <option value="">Select Insurance</option>
+  <option>Government Health Scheme</option>
+  <option>Private Insurance</option>
+  <option>Employer Insurance</option>
+</select>
+
+<button onclick="checkInsurance()">Check Coverage</button>
+
+<div id="insuranceOut" class="output"></div>
+
+<button class="back" onclick="show('advanced')">← Back</button>
+</div>
+
+
+<script>
+function previewProfilePic(event){
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = document.getElementById("profilePicPreview");
+    img.src = e.target.result;
+    img.style.display = "block";
+
+    // Temporarily store image before save
+    localStorage.setItem("tempProfilePic", e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function lockSettings(){
+  const pin = prompt("Set 4-digit PIN");
+  if(pin && pin.length === 4){
+    localStorage.setItem("settingsPIN", pin);
+    const s = getSettings();
+    s.locked = true;
+    saveSettings(s);
+    alert("Settings locked");
+  }
+}
+
+function checkLock(){
+  const s = getSettings();
+  if(s.locked){
+    const pin = prompt("Enter PIN to open settings");
+    if(pin !== localStorage.getItem("settingsPIN")){
+      return false;
+    }
+  }
+  return true;
+}
+
+/* ================= SETTINGS SYSTEM ================= */
+
+const defaultSettings = {
+  notifications: true,
+  sound: true,
+  darkMode: false,
+  language: "en",
+  locked: false
+};
+
+
+
+function getSettings(){
+  return JSON.parse(localStorage.getItem("appSettings"))
+    || defaultSettings;
+}
+
+function saveSettings(s){
+  localStorage.setItem("appSettings", JSON.stringify(s));
+}
+
+function toggleSettings(){
+  if(!checkLock()) return;
+  const panel = document.getElementById("settingsPanel");
+  panel.style.display =
+    panel.style.display === "block" ? "none" : "block";
+}
+
+/* Apply settings to UI */
+function applySettings(){
+  const s = getSettings();
+
+  document.getElementById("setNotify").checked   = s.notifications;
+  document.getElementById("setSound").checked    = s.sound;
+  document.getElementById("setDarkMode").checked = s.darkMode;
+
+  document.getElementById("setLanguage").value = s.language;
+
+  document.body.classList.toggle("dark", s.darkMode);
+
+  document.getElementById("sosBtn").style.display = "flex";
+
+  applyLanguage(s.language);
+}
+
+/* Save changes */
+function saveFromSettings(){
+  const s = {
+    notifications: document.getElementById("setNotify").checked,
+    sound: document.getElementById("setSound").checked,
+    darkMode: document.getElementById("setDarkMode").checked,
+    language: document.getElementById("setLanguage").value,
+    locked: getSettings().locked
+  };
+
+  saveSettings(s);
+  applySettings();
+}
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("setNotify").addEventListener("change", saveFromSettings);
+  document.getElementById("setSound").addEventListener("change", saveFromSettings);
+  document.getElementById("setDarkMode").addEventListener("change", saveFromSettings);
+  document.getElementById("setLanguage").addEventListener("change", saveFromSettings);
+
+  applySettings();
+});
+
+
+// checkboxes
+document.querySelectorAll(
+  "#settingsPanel input[type='checkbox']"
+).forEach(i=>{
+  i.addEventListener("change", saveFromSettings);
+});
+
+// language select
+setLanguage.addEventListener("change", saveFromSettings);
+
+const translations = {
+  en:{
+    settings:"Settings",
+    dark:"Dark Mode",
+    notify:"Enable Notifications"
+  },
+  hi:{
+    settings:"सेटिंग्स",
+    dark:"डार्क मोड",
+    notify:"सूचनाएं चालू करें"
+  }
+};
+document.addEventListener("DOMContentLoaded", loadHomeProfilePhoto);
+
+function applyLanguage(lang){
+  document.querySelector("#settingsPanel h3").innerText =
+    translations[lang].settings;
+
+  document
+    .querySelector("label[for='setDarkMode']")?.childNodes[1] &&
+    (document.querySelector("label[for='setDarkMode']").childNodes[1].nodeValue =
+      " " + translations[lang].dark);
+}
+
+/* ================= NOTIFICATION SYSTEM ================= */
+
+function getNotifications(){
+  return JSON.parse(localStorage.getItem("notifications") || "[]");
+}
+
+function saveNotification(text){
+  if(!getSettings().notifications) return;
+
+  const list = getNotifications();
+  list.unshift({
+    text,
+    time: new Date().toLocaleString(),
+    unread: true
+  });
+  localStorage.setItem("notifications", JSON.stringify(list));
+  updateNotifyUI();
+  showPopup(text);
+}
+
+function updateNotifyUI(){
+  const list = getNotifications();
+  const unread = list.filter(n => n.unread).length;
+
+  const badge = document.getElementById("notifyCount");
+  badge.style.display = unread > 0 ? "block" : "none";
+  badge.textContent = unread;
+
+  const panel = document.getElementById("notificationList");
+  panel.innerHTML = list.length === 0
+    ? "No notifications"
+    : list.map(n => `
+        <div style="margin-bottom:10px;">
+          <strong>${n.text}</strong><br>
+          <small>${n.time}</small>
+        </div>
+      `).join("");
+}
+
+function toggleNotifications(){
+  const panel = document.getElementById("notificationPanel");
+  panel.style.display = panel.style.display === "block" ? "none" : "block";
+
+  // mark all as read
+  const list = getNotifications().map(n => ({...n, unread:false}));
+  localStorage.setItem("notifications", JSON.stringify(list));
+  updateNotifyUI();
+}
+
+/* Small popup on screen */
+function showPopup(text){
+  const box = document.createElement("div");
+  box.style.position = "fixed";
+  box.style.bottom = "90px";
+  box.style.right = "20px";
+  box.style.background = "#fff";
+  box.style.color = "#000";
+  box.style.padding = "14px";
+  box.style.borderRadius = "14px";
+  box.style.boxShadow = "0 10px 30px rgba(0,0,0,0.4)";
+  box.style.zIndex = "9999";
+  box.innerHTML = `🔔 ${text}`;
+
+  document.body.appendChild(box);
+
+  setTimeout(()=> box.remove(), 5000);
+}
+
+document.addEventListener("DOMContentLoaded", updateNotifyUI);
+
+
+function loadMainReminders(){
+  const out = document.getElementById("mainReminders");
+  let html = "";
+  const now = new Date();
+
+  JSON.parse(localStorage.getItem("medications")||"[]").forEach(m=>{
+    html += `💊 ${m.name} at ${m.time}<br>`;
+  });
+
+  JSON.parse(localStorage.getItem("appointments")||"[]").forEach(a=>{
+    html += `📅 Dr. ${a.doctor} — ${new Date(a.dateTime).toLocaleString()}<br>`;
+  });
+
+  out.innerHTML = html || "No reminders";
+}
+
+
+function playAlarm(){
+  if(!getSettings().sound) return;
+
+  const audio = document.getElementById("alarmSound");
+  audio.currentTime = 0;
+  audio.play();
+}
+
+
+async function enableNotifications(){
+  if("Notification" in window){
+    const permission = await Notification.requestPermission();
+    if(permission !== "granted"){
+      alert("Please allow notifications for reminders");
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", enableNotifications);
+
+function suggestMedicine(){
+  const disease = diseaseSelect.value;
+  if(!disease){
+    suggestOut.innerHTML = "Please select a disease.";
+    return;
+  }
+
+  const meds = diseaseMedicineMap[disease];
+
+  if(!meds || meds.length === 0){
+    suggestOut.innerHTML = `
+      <strong>${disease}</strong><br><br>
+      ⚠ No OTC medicines suggested.<br>
+      Please consult a doctor.
+    `;
+    return;
+  }
+
+  let output = `<strong>${disease}</strong><br><br>`;
+
+  meds.forEach(med => {
+    const m = medicineDB[med];
+    if(m){
+      output += `
+        💊 <strong>${med.toUpperCase()}</strong><br>
+        Use: ${m.use}<br>
+        Dose: ${m.dose}<br><br>
+      `;
+    }
+  });
+
+  output += `<span class="small">Educational purpose only.</span>`;
+  suggestOut.innerHTML = output;
+}
+
+function loadDiseases(){
+  const select = document.getElementById("diseaseSelect");
+  if(!select) return;
+
+  select.innerHTML = '<option value="">Select Disease</option>';
+
+  Object.keys(diseaseMedicineMap).forEach(d => {
+    const option = document.createElement("option");
+    option.value = d;
+    option.textContent = d;
+    select.appendChild(option);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", loadDiseases);
+
+const diseaseMedicineMap = {
+  "Viral Fever": ["paracetamol", "ORS"],
+  "Bacterial Infection": ["amoxicillin", "azithromycin"],
+  "Dengue": ["paracetamol", "ORS"],
+  "Malaria": ["artemether", "paracetamol"],
+  "Typhoid": ["azithromycin", "ciprofloxacin"],
+
+  "Common Cold": ["cetirizine", "paracetamol"],
+  "Bronchitis": ["azithromycin", "salbutamol"],
+  "Pneumonia": ["azithromycin", "amoxicillin"],
+
+  "Migraine": ["paracetamol", "ibuprofen"],
+  "Hypertension": ["amlodipine", "losartan"],
+  "Diabetes": ["metformin", "insulin"],
+
+  "Asthma": ["salbutamol", "budesonide"],
+  "GERD": ["pantoprazole", "omeprazole"],
+
+  "UTI": ["ciprofloxacin"],
+  "Anemia": ["iron", "folicacid"],
+  "Allergy": ["cetirizine", "loratadine"],
+
+  "Fungal Infection": ["clotrimazole", "fluconazole"],
+  "Skin Infection": ["mupirocin"],
+  "Worm Infection": ["albendazole"],
+
+  "Depression": [],
+  "Heart Attack": []
+};
+
+
+function checkInsurance(){
+  const out = document.getElementById("insuranceOut");
+  out.innerHTML = `
+    <strong>Coverage Details:</strong><br>
+    ✔ Doctor Consultation<br>
+    ✔ Lab Tests (Partial)<br>
+    ✔ Emergency Services<br><br>
+    <em>Note: This is a demo insurance module.</em>
+  `;
+}
+
+function bookLab(){
+  const test = document.getElementById("labTest").value;
+  if(!test){
+    labOut.innerHTML = "Please select a test.";
+    return;
+  }
+
+  labOut.innerHTML = `
+    ✔ ${test} booked successfully.<br>
+    🕒 Sample Collection: Tomorrow 9–11 AM<br>
+    📄 Result Status: Pending
+  `;
+}
+
+function submitFeedback(){
+  feedbackOut.innerHTML = `
+    ✔ Thank you for your feedback.<br>
+    Your response helps improve healthcare quality.
+  `;
+}
+
+/* SOS PANEL CONTROL */
+function openSOS(){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("sosPanel").classList.add("active");
+  loadEmergencyContact();
+}
+
+
+function closeSOS(){
+  show('main');
+}
+
+/* CALL EMERGENCY NUMBER */
+function callEmergency(){
+  // India emergency number: 112
+  window.location.href = "tel:112";
+}
+
+/* SHARE LIVE LOCATION */
+function shareLocation(){
+  const phone = localStorage.getItem("emergencyContact");
+  if(!phone){
+    alert("Please save emergency contact first");
+    return;
+  }
+
+  if(!navigator.geolocation){
+    alert("Geolocation not supported by this browser");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+  pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
+    const message = encodeURIComponent(
+      "EMERGENCY! My live location: " + mapLink
+    );
+
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const smsURL = isIOS
+      ? `sms:${phone}&body=${message}`
+      : `sms:${phone}?body=${message}`;
+
+    window.location.href = smsURL;
+  },
+
+    error => {
+      switch(error.code){
+        case error.PERMISSION_DENIED:
+          alert("Location permission denied. Allow location access.");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          alert("Location unavailable. Turn on GPS.");
+          break;
+        case error.TIMEOUT:
+          alert("Location request timed out. Try again.");
+          break;
+        default:
+          alert("Unable to get location. Check GPS & permissions.");
+      }
+    },
+    {
+      enableHighAccuracy:true,
+      timeout:15000,
+      maximumAge:0
+    }
+  );
+}
+
+document.addEventListener("DOMContentLoaded", loadEmergencyContact);
+
+
+
+/* SYMPTOM KNOWLEDGE BASE (RULE-BASED) */
+/* ================= SYMPTOM DATABASE (40+ ITEMS) ================= */
+const symptomDB = {
+  fever:{suggestion:"Infection or flu",advice:"Rest, fluids",serious:false},
+  cough:{suggestion:"Cold or allergy",advice:"Warm fluids",serious:false},
+  cold:{suggestion:"Viral infection",advice:"Steam inhalation",serious:false},
+  headache:{suggestion:"Stress or dehydration",advice:"Rest, hydration",serious:false},
+  sore_throat:{suggestion:"Throat infection",advice:"Gargle warm salt water",serious:false},
+  body_pain:{suggestion:"Viral fever",advice:"Rest, pain reliever",serious:false},
+  nausea:{suggestion:"Food issue",advice:"Light diet",serious:false},
+  vomiting:{suggestion:"Stomach infection",advice:"ORS, fluids",serious:false},
+  diarrhea:{suggestion:"Food poisoning",advice:"ORS, avoid oily food",serious:false},
+  dizziness:{suggestion:"Low BP or dehydration",advice:"Sit down, hydrate",serious:false},
+  fatigue:{suggestion:"Lack of sleep or anemia",advice:"Proper rest",serious:false},
+  chest_pain:{suggestion:"Heart-related issue",advice:"Emergency attention",serious:true},
+  breathing_trouble:{suggestion:"Asthma or infection",advice:"Seek emergency help",serious:true},
+  wheezing:{suggestion:"Asthma",advice:"Use inhaler",serious:true},
+  palpitations:{suggestion:"Heart rhythm issue",advice:"Medical checkup",serious:true},
+  high_bp:{suggestion:"Hypertension",advice:"Monitor BP",serious:false},
+  low_bp:{suggestion:"Dehydration",advice:"Increase fluids",serious:false},
+  high_sugar:{suggestion:"Diabetes",advice:"Check blood glucose",serious:false},
+  frequent_urination:{suggestion:"Diabetes or UTI",advice:"Doctor consultation",serious:false},
+  burning_urine:{suggestion:"Urinary infection",advice:"Drink water",serious:false},
+  joint_pain:{suggestion:"Arthritis",advice:"Warm compress",serious:false},
+  back_pain:{suggestion:"Muscle strain",advice:"Rest, posture care",serious:false},
+  neck_pain:{suggestion:"Poor posture",advice:"Stretching",serious:false},
+  skin_rash:{suggestion:"Allergy or infection",advice:"Avoid irritants",serious:false},
+  itching:{suggestion:"Allergy",advice:"Antihistamine",serious:false},
+  hair_fall:{suggestion:"Stress or deficiency",advice:"Balanced diet",serious:false},
+  weight_loss:{suggestion:"Metabolic issue",advice:"Medical evaluation",serious:false},
+  weight_gain:{suggestion:"Hormonal imbalance",advice:"Exercise & diet",serious:false},
+  anxiety:{suggestion:"Mental stress",advice:"Relaxation techniques",serious:false},
+  depression:{suggestion:"Mental health issue",advice:"Counseling advised",serious:true},
+  insomnia:{suggestion:"Sleep disorder",advice:"Sleep hygiene",serious:false},
+  eye_pain:{suggestion:"Eye strain",advice:"Rest eyes",serious:false},
+  blurred_vision:{suggestion:"Eye problem or sugar",advice:"Eye checkup",serious:true},
+  ear_pain:{suggestion:"Ear infection",advice:"Doctor visit",serious:false},
+  toothache:{suggestion:"Dental cavity",advice:"Dental consultation",serious:false},
+  swelling:{suggestion:"Inflammation",advice:"Cold compress",serious:false},
+  numbness:{suggestion:"Nerve issue",advice:"Neurological consult",serious:true},
+  seizures:{suggestion:"Neurological emergency",advice:"Immediate help",serious:true}
+};
+
+
+/* CHECK SYMPTOM */
+function checkSymptom(){
+  const s = symptomSelect.value;
+  if(!s){
+    symptomOut.innerHTML = "Please select a symptom.";
+    return;
+  }
+
+  const data = symptomDB[s];
+
+  let output = `
+    <strong>Possible Information:</strong><br>
+    ${data.suggestion}<br><br>
+    <strong>General Advice:</strong><br>
+    ${data.advice}<br><br>
+    <span class="small">
+      Disclaimer: This is not a medical diagnosis.
+    </span>
+  `;
+
+  if(data.serious){
+    output += `
+      <br><br>
+      <strong style="color:#e74c3c;">
+        ⚠ This symptom may be serious.
+      </strong><br>
+      <button onclick="connectDoctor()">👨‍⚕️ Connect to Doctor</button>
+    `;
+  }
+
+  symptomOut.innerHTML = output;
+}
+
+/* CONNECT TO DOCTOR */
+function connectDoctor(){
+  alert(
+    "You will be redirected to book an appointment or start telemedicine consultation."
+  );
+  show('appointments'); // uses your existing appointment system
+}
+
+/* REQUEST NOTIFICATION PERMISSION */
+
+function alertContacts(){
+  const phone = localStorage.getItem("emergencyContact");
+  if(!phone){
+    alert("Please save emergency contact first");
+    return;
+  }
+
+  const message = encodeURIComponent(
+    "EMERGENCY! I need immediate help. Please contact me."
+  );
+
+  window.location.href = `sms:${phone}?body=${message}`;
+}
+function loadHomeProfilePhoto(){
+  const img = document.getElementById("homeProfilePic");
+  if(!img) return;
+
+  const imgData = localStorage.getItem("profilePic");
+  if(!imgData) return;
+
+  img.src = imgData;
+  img.style.display = "block";
+}
+
+/* ADD MEDICATION */
+function addMedication(){
+  if(!medName.value || !medDose.value || !medTime.value){
+    alert("Fill all medication details");
+    return;
+  }
+
+  const medication={
+    id:Date.now(),
+    name:medName.value,
+    dosage:medDose.value,
+    time:medTime.value,
+    history:[]
+  };
+
+  const meds=JSON.parse(localStorage.getItem("medications")||"[]");
+  meds.push(medication);
+  localStorage.setItem("medications",JSON.stringify(meds));
+
+  scheduleReminder(medication);
+
+  medName.value=medDose.value=medTime.value="";
+  loadMedications();
+}
+
+/* LOAD MEDICATIONS */
+function loadMedications(){
+  const meds=JSON.parse(localStorage.getItem("medications")||"[]");
+  medList.innerHTML="";
+
+  if(meds.length===0){
+    medList.innerHTML="No medications added.";
+    return;
+  }
+
+  meds.forEach(m=>{
+    medList.innerHTML+=`
+      <div class="record">
+        <strong>${m.name}</strong><br>
+        Dosage: ${m.dosage}<br>
+        Time: ${m.time}<br>
+
+        <button onclick="markDose(${m.id},'Taken')">✅ Taken</button>
+        <button onclick="markDose(${m.id},'Missed')">❌ Missed</button>
+        <button onclick="orderRefill('${m.name}')">🛒 Order Refill</button>
+
+        <div class="small">${renderHistory(m.history)}</div>
+      </div>`;
+  });
+}
+
+/* MARK DOSE */
+function markDose(id,status){
+  const meds=JSON.parse(localStorage.getItem("medications"));
+  const med=meds.find(m=>m.id===id);
+  med.history.push({
+    date:new Date().toLocaleString(),
+    status
+  });
+  localStorage.setItem("medications",JSON.stringify(meds));
+  loadMedications();
+}
+
+/* HISTORY DISPLAY */
+function renderHistory(hist){
+  if(hist.length===0) return "No history yet";
+  return hist.map(h=>`${h.date}: ${h.status}`).join("<br>");
+}
+
+/* REMINDER */
+function scheduleReminder(med){
+  const [h,m] = med.time.split(":");
+  const now = new Date();
+  const remind = new Date();
+  remind.setHours(h,m,0,0);
+
+  if(remind < now) remind.setDate(remind.getDate() + 1);
+
+  setTimeout(() => {
+    playAlarm();
+    saveNotification(`💊 Take ${med.name} (${med.dosage}) now`);
+  }, remind - now);
+}
+
+
+
+/* REFILL (SIMULATION) */
+function orderRefill(name){
+  alert(`Refill order placed for ${name} (demo only)`);
+}
+
+/* AUTO LOAD */
+document.addEventListener("DOMContentLoaded",loadMedications);
+
+/* APPOINTMENT MANAGEMENT */
+
+function bookAppointment(){
+  if(!docName.value || !apptDate.value || !apptType.value){
+    alert("Please fill all fields");
+    return;
+  }
+
+  const appointment={
+    id:Date.now(),
+    doctor:docName.value,
+    dateTime:apptDate.value,
+    type:apptType.value,
+    notes:apptNotes.value
+  };
+
+  const appts=JSON.parse(localStorage.getItem("appointments")||"[]");
+  appts.push(appointment);
+  localStorage.setItem("appointments",JSON.stringify(appts));
+
+  setReminder(appointment);
+
+  docName.value=apptDate.value=apptNotes.value="";
+  apptType.value="";
+  loadAppointments();
+}
+
+function loadAppointments(){
+  const appts=JSON.parse(localStorage.getItem("appointments")||"[]");
+  apptList.innerHTML="";
+
+  if(appts.length===0){
+    apptList.innerHTML="No appointments scheduled.";
+    return;
+  }
+
+  appts.forEach(a=>{
+    apptList.innerHTML+=`
+      <div class="record">
+        <strong>Dr. ${a.doctor}</strong><br>
+        Date: ${new Date(a.dateTime).toLocaleString()}<br>
+        Type: ${a.type}<br>
+        Notes: ${a.notes}<br>
+        ${telemedicineLink(a)}
+        <button onclick="cancelAppointment(${a.id})">Cancel</button>
+      </div>`;
+  });
+}
+
+function cancelAppointment(id){
+  let appts=JSON.parse(localStorage.getItem("appointments"));
+  appts=appts.filter(a=>a.id!==id);
+  localStorage.setItem("appointments",JSON.stringify(appts));
+  loadAppointments();
+}
+
+/* REMINDER (DEMO) */
+function setReminder(appt){
+  const apptTime = new Date(appt.dateTime);
+  const reminderTime = apptTime.getTime() - Date.now() - 60000;
+
+  if(reminderTime <= 0) return;
+
+  setTimeout(() => {
+    playAlarm();
+    saveNotification(`📅 Appointment with Dr. ${appt.doctor} in 1 minute`);
+  }, reminderTime);
+}
+
+
+
+/* TELEMEDICINE DEMO */
+function telemedicineLink(a){
+  if(a.type==="Audio")
+    return `<button onclick="alert('Audio consultation started (demo)')">📞 Join Audio</button>`;
+  if(a.type==="Video")
+    return `<button onclick="alert('Video consultation started (demo)')">🎥 Join Video</button>`;
+  return "";
+}
+
+/* AUTO LOAD */
+document.addEventListener("DOMContentLoaded",loadAppointments);
+
+/* SCREEN */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+
+  if(id === "records") loadRecords();
+  if(id === "profile") loadProfile();
+  if(id === "doctorSection") renderDoctors();
+  if(id === "main"){
+    loadMainReminders();
+    loadHomeProfilePhoto();
+  }
+}
+
+
+/* USER PROFILE */
+function saveProfile(){
+  const profile = {
+    name: uname.value,
+    age: uage.value,
+    gender: ugender.value,
+    blood: ublood.value,
+    photo: localStorage.getItem("tempProfilePic") || null
+  };
+  loadHomeProfilePhoto();
+
+  localStorage.setItem("userProfile", JSON.stringify(profile));
+
+  profileOut.innerHTML = `
+    Saved:<br>
+    ${profile.name}, ${profile.age}, ${profile.gender}, ${profile.blood}
+  `;
+
+  // Move temp image to permanent storage
+  if(profile.photo){
+    localStorage.setItem("profilePic", profile.photo);
+    localStorage.removeItem("tempProfilePic");
+  }
+}
+
+function loadProfile(){
+  const stored = localStorage.getItem("userProfile");
+  if(!stored) return;
+
+  const profile = JSON.parse(stored);
+
+  uname.value = profile.name || "";
+  uage.value = profile.age || "";
+  ugender.value = profile.gender || "";
+  ublood.value = profile.blood || "";
+
+  profileOut.innerHTML = `
+    Loaded Profile:<br>
+    ${profile.name}, ${profile.age}, ${profile.gender}, ${profile.blood}
+  `;
+
+  const imgData = localStorage.getItem("profilePic");
+  if(imgData){
+    const img = document.getElementById("profilePicPreview");
+    img.src = imgData;
+    img.style.display = "block";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadProfile);
+
+/* HEALTH RECORDS */
+function addRecord(){
+  const record={
+    date:new Date().toLocaleString(),
+    symptoms:symptoms.value,
+    diagnosis:diagnosis.value,
+    medicines:medicines.value,
+    notes:notes.value
+  };
+  const records=JSON.parse(localStorage.getItem("healthRecords")||"[]");
+  records.push(record);
+  localStorage.setItem("healthRecords",JSON.stringify(records));
+  symptoms.value=diagnosis.value=medicines.value=notes.value="";
+  loadRecords();
+}
+
+function loadRecords(){
+  const records=JSON.parse(localStorage.getItem("healthRecords")||"[]");
+  recordList.innerHTML="";
+  if(records.length===0){
+    recordList.innerHTML="No records found.";
+    return;
+  }
+  records.forEach((r,i)=>{
+    recordList.innerHTML+=`
+      <div class="record">
+        <strong>${r.date}</strong><br>
+        Symptoms: ${r.symptoms}<br>
+        Diagnosis: ${r.diagnosis}<br>
+        Medicines: ${r.medicines}<br>
+        Notes: ${r.notes}<br>
+        <button onclick="deleteRecord(${i})">Delete</button>
+      </div>`;
+  });
+}
+
+function deleteRecord(i){
+  const records=JSON.parse(localStorage.getItem("healthRecords"));
+  records.splice(i,1);
+  localStorage.setItem("healthRecords",JSON.stringify(records));
+  loadRecords();
+}
+
+/* MEDICINE DATA */
+/* ================= MEDICINE DATABASE (40+ ITEMS) ================= */
+const medicineDB = {
+  paracetamol:{use:"Fever, pain relief",dose:"500–650 mg every 6 hrs",precautions:"Max 4g/day"},
+  ibuprofen:{use:"Pain, inflammation",dose:"400 mg every 6–8 hrs",precautions:"Avoid stomach ulcers"},
+  aspirin:{use:"Pain, blood thinner",dose:"75–325 mg daily",precautions:"Avoid in children"},
+  cetirizine:{use:"Allergy, cold",dose:"10 mg once daily",precautions:"May cause drowsiness"},
+  loratadine:{use:"Allergy",dose:"10 mg once daily",precautions:"Non-drowsy"},
+  levocetirizine:{use:"Allergy, cold",dose:"5 mg daily",precautions:"May cause sleepiness"},
+  amoxicillin:{use:"Bacterial infection",dose:"500 mg every 8 hrs",precautions:"Prescription only"},
+  azithromycin:{use:"Respiratory infection",dose:"500 mg daily x3 days",precautions:"Complete course"},
+  doxycycline:{use:"Bacterial infection, acne",dose:"100 mg daily",precautions:"Avoid sunlight"},
+  ciprofloxacin:{use:"Urinary infection",dose:"500 mg twice daily",precautions:"Avoid dairy"},
+  metformin:{use:"Diabetes",dose:"500 mg twice daily",precautions:"Monitor sugar"},
+  insulin:{use:"Diabetes control",dose:"As prescribed",precautions:"Risk of hypoglycemia"},
+  glimepiride:{use:"Diabetes",dose:"1–2 mg daily",precautions:"Low sugar risk"},
+  losartan:{use:"High BP",dose:"50 mg daily",precautions:"Monitor BP"},
+  amlodipine:{use:"High BP",dose:"5 mg daily",precautions:"Ankle swelling"},
+  atenolol:{use:"High BP, heart",dose:"50 mg daily",precautions:"Do not stop suddenly"},
+  omeprazole:{use:"Acidity",dose:"20 mg before breakfast",precautions:"Short-term use"},
+  pantoprazole:{use:"GERD, acidity",dose:"40 mg daily",precautions:"Avoid long-term"},
+  ranitidine:{use:"Acidity",dose:"150 mg twice daily",precautions:"Restricted in some regions"},
+  ondansetron:{use:"Vomiting",dose:"4 mg as needed",precautions:"Constipation"},
+  domperidone:{use:"Nausea",dose:"10 mg before meals",precautions:"Heart rhythm risk"},
+  salbutamol:{use:"Asthma",dose:"Inhaler as prescribed",precautions:"Avoid overuse"},
+  montelukast:{use:"Asthma, allergy",dose:"10 mg at night",precautions:"Not for acute attack"},
+  budesonide:{use:"Asthma control",dose:"Inhalation",precautions:"Rinse mouth"},
+  diclofenac:{use:"Pain, swelling",dose:"50 mg twice daily",precautions:"Stomach irritation"},
+  tramadol:{use:"Moderate pain",dose:"50 mg as prescribed",precautions:"Dependency risk"},
+  vitaminC:{use:"Immunity",dose:"500 mg daily",precautions:"Avoid excess"},
+  vitaminD:{use:"Bone health",dose:"60,000 IU weekly",precautions:"Check levels"},
+  calcium:{use:"Bone strength",dose:"500 mg daily",precautions:"Kidney stones"},
+  iron:{use:"Anemia",dose:"As prescribed",precautions:"Constipation"},
+  folicacid:{use:"Pregnancy, anemia",dose:"5 mg daily",precautions:"Safe"},
+  zinc:{use:"Immunity",dose:"20 mg daily",precautions:"Avoid overdose"},
+  ORS:{use:"Dehydration",dose:"After each loose stool",precautions:"Use fresh solution"},
+  albendazole:{use:"Worm infection",dose:"400 mg single dose",precautions:"Avoid pregnancy"},
+  ivermectin:{use:"Parasitic infection",dose:"As prescribed",precautions:"Medical supervision"},
+  clotrimazole:{use:"Fungal infection",dose:"Apply twice daily",precautions:"External use only"},
+  fluconazole:{use:"Fungal infection",dose:"150 mg weekly",precautions:"Liver monitoring"},
+  mupirocin:{use:"Skin infection",dose:"Apply 2–3 times daily",precautions:"External use"}
+};
+
+/* AUTO LOAD ALL SYMPTOMS INTO DROPDOWN */
+function loadSymptoms(){
+  const select = document.getElementById("symptomSelect");
+  select.innerHTML = '<option value="">Select a symptom</option>';
+
+  Object.keys(symptomDB).forEach(symptom=>{
+    const option = document.createElement("option");
+    option.value = symptom;
+    option.textContent = symptom
+      .replace(/_/g," ")
+      .replace(/\b\w/g,c=>c.toUpperCase());
+    select.appendChild(option);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", loadSymptoms);
+
+
+
+/* ================= DISEASE DATABASE (40+ CONDITIONS) ================= */
+
+const diseaseDB = {
+  fever: [
+    "Viral Fever",
+    "Bacterial Infection",
+    "Dengue",
+    "Malaria",
+    "Typhoid",
+    "COVID-19",
+    "Chikungunya"
+  ],
+
+  cough: [
+    "Common Cold",
+    "Bronchitis",
+    "Pneumonia",
+    "Tuberculosis",
+    "Whooping Cough"
+  ],
+
+  cold: [
+    "Common Cold",
+    "Seasonal Allergy",
+    "Sinusitis"
+  ],
+
+  headache: [
+    "Migraine",
+    "Tension Headache",
+    "Sinus Headache",
+    "Dehydration",
+    "Hypertension"
+  ],
+
+  chest_pain: [
+    "Heart Attack",
+    "Angina",
+    "Gastroesophageal Reflux Disease (GERD)",
+    "Costochondritis"
+  ],
+
+  breathing_trouble: [
+    "Asthma",
+    "Chronic Obstructive Pulmonary Disease (COPD)",
+    "Pneumonia",
+    "COVID-19",
+    "Heart Failure"
+  ],
+
+  sore_throat: [
+    "Tonsillitis",
+    "Pharyngitis",
+    "Laryngitis",
+    "Viral Throat Infection"
+  ],
+
+  nausea: [
+    "Food Poisoning",
+    "Gastritis",
+    "Motion Sickness"
+  ],
+
+  vomiting: [
+    "Gastroenteritis",
+    "Food Poisoning",
+    "Migraine",
+    "Appendicitis"
+  ],
+
+  diarrhea: [
+    "Gastroenteritis",
+    "Food Poisoning",
+    "Irritable Bowel Syndrome (IBS)",
+    "Cholera"
+  ],
+
+  dizziness: [
+    "Vertigo",
+    "Low Blood Pressure",
+    "Dehydration",
+    "Anemia"
+  ],
+
+  fatigue: [
+    "Anemia",
+    "Hypothyroidism",
+    "Chronic Fatigue Syndrome",
+    "Depression"
+  ],
+
+  high_bp: [
+    "Primary Hypertension",
+    "Secondary Hypertension",
+    "Heart Disease"
+  ],
+
+  low_bp: [
+    "Dehydration",
+    "Shock",
+    "Adrenal Insufficiency"
+  ],
+
+  high_sugar: [
+    "Type 1 Diabetes",
+    "Type 2 Diabetes",
+    "Prediabetes"
+  ],
+
+  frequent_urination: [
+    "Diabetes Mellitus",
+    "Urinary Tract Infection (UTI)",
+    "Kidney Disease"
+  ],
+
+  burning_urine: [
+    "Urinary Tract Infection",
+    "Kidney Infection",
+    "Prostatitis"
+  ],
+
+  joint_pain: [
+    "Osteoarthritis",
+    "Rheumatoid Arthritis",
+    "Gout",
+    "Lupus"
+  ],
+
+  back_pain: [
+    "Muscle Strain",
+    "Herniated Disc",
+    "Sciatica",
+    "Spinal Arthritis"
+  ],
+
+  neck_pain: [
+    "Cervical Spondylosis",
+    "Whiplash Injury",
+    "Poor Posture Syndrome"
+  ],
+
+  skin_rash: [
+    "Eczema",
+    "Psoriasis",
+    "Fungal Infection",
+    "Allergic Dermatitis"
+  ],
+
+  itching: [
+    "Allergic Reaction",
+    "Scabies",
+    "Fungal Infection"
+  ],
+
+  hair_fall: [
+    "Alopecia Areata",
+    "Iron Deficiency",
+    "Hormonal Imbalance"
+  ],
+
+  weight_loss: [
+    "Hyperthyroidism",
+    "Diabetes",
+    "Cancer",
+    "Malabsorption Syndrome"
+  ],
+
+  weight_gain: [
+    "Hypothyroidism",
+    "Polycystic Ovary Syndrome (PCOS)",
+    "Obesity"
+  ],
+
+  anxiety: [
+    "Generalized Anxiety Disorder",
+    "Panic Disorder",
+    "Post-Traumatic Stress Disorder (PTSD)"
+  ],
+
+  depression: [
+    "Major Depressive Disorder",
+    "Seasonal Affective Disorder",
+    "Bipolar Disorder"
+  ],
+
+  insomnia: [
+    "Sleep Apnea",
+    "Insomnia Disorder",
+    "Stress-Related Sleep Disturbance"
+  ],
+
+  eye_pain: [
+    "Conjunctivitis",
+    "Glaucoma",
+    "Eye Strain"
+  ],
+
+  blurred_vision: [
+    "Cataract",
+    "Diabetic Retinopathy",
+    "Refractive Error"
+  ],
+
+  ear_pain: [
+    "Otitis Media",
+    "Otitis Externa",
+    "Sinus Infection"
+  ],
+
+  toothache: [
+    "Dental Cavity",
+    "Gingivitis",
+    "Dental Abscess"
+  ],
+
+  swelling: [
+    "Inflammation",
+    "Edema",
+    "Kidney Failure",
+    "Heart Failure"
+  ],
+
+  numbness: [
+    "Peripheral Neuropathy",
+    "Stroke",
+    "Vitamin B12 Deficiency"
+  ],
+
+  seizures: [
+    "Epilepsy",
+    "Febrile Seizure",
+    "Brain Tumor",
+    "Head Injury"
+  ]
+};
+
+
+function medicineInfo(){
+  const m=medicineDB[medInput.value.toLowerCase()];
+  medOut.innerHTML=m?
+    `Use: ${m.use}<br>Dosage: ${m.dose}`:
+    "Medicine not found.";
+}
+
+function suggest(){
+  const d=disease.value;
+  if(!d) return suggestOut.innerHTML="Select disease";
+  const med=diseaseDB[d];
+  const m=medicineDB[med];
+  suggestOut.innerHTML=`Suggested: ${med}<br>Use: ${m.use}<br>Dosage: ${m.dose}`;
+}
+
+function saveEmergencyContact(){
+  const num = emergencyNumber.value.trim();
+
+  if(!num || num.length < 10){
+    alert("Please enter a valid phone number");
+    return;
+  }
+
+  localStorage.setItem("emergencyContact", num);
+  emergencyStatus.innerHTML = `Saved Emergency Contact: ${num}`;
+}
+
+function loadEmergencyContact(){
+  const saved = localStorage.getItem("emergencyContact");
+  if(saved){
+    emergencyNumber.value = saved;
+    emergencyStatus.innerHTML = `Saved Emergency Contact: ${saved}`;
+  }
+}
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("Service Worker Registered"))
+      .catch(err => console.log("SW registration failed", err));
+  });
+}
+function clearNotifications(){
+  localStorage.removeItem("notifications");
+  updateNotifyUI();
+}
+function clearAllData(){
+  if(confirm("This will delete all saved data. Continue?")){
+    localStorage.clear();
+    location.reload();
+  }
+}
+function resetSettings(){
+  if(confirm("Reset all settings to default?")){
+    localStorage.setItem(
+      "appSettings",
+      JSON.stringify(defaultSettings)
+    );
+    applySettings();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", applySettings);
+function getDoctors(){
+  return JSON.parse(localStorage.getItem("savedDoctors") || "[]");
+}
+
+function saveDoctors(list){
+  localStorage.setItem("savedDoctors", JSON.stringify(list));
+}
+
+function addDoctor(){
+  const name = document.getElementById("doctorNameInput").value.trim();
+  const phone = document.getElementById("doctorPhoneInput").value.trim();
+
+  if(!name || !phone){
+    alert("Enter doctor name and phone");
+    return;
+  }
+
+  const list = getDoctors();
+  list.push({ name, phone });
+  saveDoctors(list);
+
+  document.getElementById("doctorNameInput").value = "";
+  document.getElementById("doctorPhoneInput").value = "";
+
+  renderDoctors();
+}
+
+function renderDoctors(){
+  const doctorList = document.getElementById("doctorList");
+  const doctors = getDoctors();
+
+  if(doctors.length === 0){
+    doctorList.innerHTML = "No doctors saved.";
+    return;
+  }
+
+  doctorList.innerHTML = "";
+
+  doctors.forEach((doc, index) => {
+    doctorList.innerHTML += `
+      <div class="record">
+        <strong>${doc.name}</strong><br>
+        📞 ${doc.phone}<br><br>
+
+        <button onclick="callDoctor('${doc.phone}')">📞 Call</button>
+        <button onclick="deleteDoctor(${index})">❌ Delete</button>
+      </div>
+    `;
+  });
+}
+
+function deleteDoctor(index){
+  const list = getDoctors();
+  list.splice(index, 1);
+  saveDoctors(list);
+  renderDoctors();
+}
+
+function callDoctor(phone){
+  window.location.href = `tel:${phone}`;
+}
+
+document.addEventListener("DOMContentLoaded", renderDoctors);
+
+</script>
+
+<!-- EMERGENCY SOS BUTTON -->
+<div id="sosBtn" onclick="openSOS()">🚨 SOS</div>
+<div id="sosPanel" class="screen">
+  <h1>🚨 Emergency SOS</h1>
+
+  <p class="small">
+    This feature is for real emergencies only.
+  </p>
+  <input id="emergencyNumber" placeholder="Emergency Contact Number">
+  <button onclick="saveEmergencyContact()">💾 Save Emergency Contact</button>
+
+<div id="emergencyStatus" class="small"></div>
+
+
+  <button onclick="callEmergency()">📞 Call Emergency</button>
+  <button onclick="shareLocation()">📍 Share Live Location</button>
+  <button onclick="alertContacts()">📨 Alert Emergency Contacts</button>
+
+  <button class="back" onclick="closeSOS()">← Close</button>
+</div>
+
+<audio id="alarmSound" preload="auto">
+  <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg">
+</audio>
+<!-- Notification Panel -->
+<div id="notificationPanel">
+  <h3>Notifications</h3>
+  <div id="notificationList">No notifications</div>
+</div>
+<!-- Settings Panel -->
+<div id="settingsPanel">
+  <h3>⚙ Settings</h3>
+
+  <button onclick="lockSettings()">🔒 Lock Settings</button>
+
+  <label>
+    <input type="checkbox" id="setSound">
+    Enable Alarm Sound
+  </label>
+
+  <label for="setDarkMode">
+    <input type="checkbox" id="setDarkMode">
+    Dark Mode
+  </label>
+
+  <label for="setNotify">
+    <input type="checkbox" id="setNotify">
+    Enable Notifications
+  </label>
+
+
+  <select id="setLanguage">
+    <option value="en">English</option>
+    <option value="hi">हिंदी</option>
+  </select>
+
+  <button onclick="clearNotifications()">🧹 Clear Notifications</button>
+  <button onclick="clearAllData()" style="background:#e74c3c;">🗑 Clear All App Data</button>
+  <button onclick="resetSettings()">🔄 Reset Settings</button>
+
+  <div class="small" style="margin-top:10px;">
+    Version: 1.0<br>
+    PWA Enabled
+  </div>
+
+  <button class="back" onclick="toggleSettings()">← Close</button>
+</div>
+
+
+</body>
+
+</html>
