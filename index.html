@@ -717,22 +717,32 @@ function toggleSettings(){
   panel.style.display =
     panel.style.display === "block" ? "none" : "block";
 }
+function toggleDarkMode(){
+  const s = getSettings();
+  s.darkMode = document.getElementById("setDarkMode").checked;
+  saveSettings(s);
+  applySettings();
+}
 
 /* Apply settings to UI */
 function applySettings(){
   const s = getSettings();
 
-  document.getElementById("setNotify").checked   = s.notifications;
-  document.getElementById("setSound").checked    = s.sound;
-  document.getElementById("setDarkMode").checked = s.darkMode;
+  const notify = document.getElementById("setNotify");
+  const sound = document.getElementById("setSound");
+  const dark  = document.getElementById("setDarkMode");
+  const lang  = document.getElementById("setLanguage");
 
-  document.getElementById("setLanguage").value = s.language;
+  if(notify) notify.checked = s.notifications;
+  if(sound)  sound.checked  = s.sound;
+  if(dark)   dark.checked   = s.darkMode;
+  if(lang)   lang.value     = s.language;
 
-  document.body.classList.toggle("dark", s.darkMode);
-
-  document.getElementById("sosBtn").style.display = "flex";
-
-  applyLanguage(s.language);
+  if(s.darkMode){
+    document.body.classList.add("dark");
+  } else {
+    document.body.classList.remove("dark");
+  }
 }
 
 /* Save changes */
@@ -749,20 +759,21 @@ function saveFromSettings(){
   applySettings();
 }
 document.addEventListener("DOMContentLoaded", () => {
-  const setNotify = document.getElementById("setNotify");
-  if(setNotify){
-    setNotify.addEventListener("change", saveFromSettings);
-  }
-  const setDarkMode = document.getElementById("setDarkMode");
-  if(setDarkMode){
-    setDarkMode.addEventListener("change", toggleDarkMode);
-  }
+  const dark = document.getElementById("setDarkMode");
+  if(dark) dark.addEventListener("change", toggleDarkMode);
 
-  document.getElementById("setSound").addEventListener("change", saveFromSettings);
-  document.getElementById("setLanguage").addEventListener("change", saveFromSettings);
+  const notify = document.getElementById("setNotify");
+  if(notify) notify.addEventListener("change", saveFromSettings);
+
+  const sound = document.getElementById("setSound");
+  if(sound) sound.addEventListener("change", saveFromSettings);
+
+  const lang = document.getElementById("setLanguage");
+  if(lang) lang.addEventListener("change", saveFromSettings);
 
   applySettings();
 });
+
 document.addEventListener("DOMContentLoaded", loadSymptoms);
 
 
@@ -1963,9 +1974,10 @@ document.addEventListener("DOMContentLoaded", function(){
 </audio>
 <!-- Notification Panel -->
 <div id="notificationPanel">
-  <h3>Notifications</h3>
-  <div id="notificationList">No notifications</div>
+  <div id="notificationList"></div>
+  <button onclick="clearNotifications()">Clear</button>
 </div>
+
 <!-- Settings Panel -->
 <div id="settingsPanel">
   <h3>⚙ Settings</h3>
