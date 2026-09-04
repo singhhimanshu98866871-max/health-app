@@ -4,3 +4,7 @@ view educational medicine suggestions, manage appointments, save doctors, and tr
 insurance information, and an Emergency SOS feature for calling emergency services, sharing live location, and alerting emergency contacts. 
 The app can be used by selecting the required feature from the home screen and entering the relevant information. It also supports dark mode,
 notifications, settings protection, and PWA functionality for a convenient app-like experience.
+"Open source health app github"
+"Web-based smart health assistance system"
+"Health app with symptom checker online"
+"JavaScript medication tracker app"
